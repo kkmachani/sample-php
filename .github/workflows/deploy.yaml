@@ -10,7 +10,7 @@ on:
 jobs:
     create-appservice:
         name: Azure_Login
-        runs-on: self-hosted
+        runs-on: [self-hosted]
         steps:
           - name: Checkout the repository
             uses: actions/checkout@v4
@@ -73,7 +73,7 @@ jobs:
  
     build-php-app:
          name: Deploying Php to app service
-         runs-on: self-hosted
+         runs-on: [self-hosted]
          needs: create-appservice
          steps:
           - name: Setup PHP
