@@ -9,10 +9,10 @@ on:
 
 jobs:
     create-appservice:
-        name: Azure_Login
+        name: create-appservice
         runs-on: [self-hosted]
         steps:
-          - name: Checkout the repository
+          - name: Checkout repo
             uses: actions/checkout@v4
          
           - name: Login to Azure
