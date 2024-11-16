@@ -28,8 +28,7 @@ jobs:
             with:
               azcliversion: latest
               inlineScript: |
-                az group show --name ${{ secrets.AZURE_RESOURCE_GROUP }} || \
-                az group create --name ${{ secrets.AZURE_RESOURCE_GROUP }} --location "Central India"
+                az group show --name ${{ secrets.AZURE_RESOURCE_GROUP }} || 
 
             
           - name: Azure CLI Script
