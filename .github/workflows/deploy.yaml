@@ -23,16 +23,24 @@ jobs:
             with:
               creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+          - name: Ensure Resource Group exists
+            uses: azure/cli@v2
+            with:
+              azcliversion: latest
+              inlineScript: |
+                az group show --name ${{ secrets.AZURE_RESOURCE_GROUP }} || \
+                az group create --name ${{ secrets.AZURE_RESOURCE_GROUP }} --location "Central India"
+
             
           - name: Azure CLI Script
-            uses: azure/cli@v2
+            uses: azure/cli@v2.1.0
             with:
               azcliversion: latest
               inlineScript: |
                 az account show
             
           - name: Creating an app service plan
-            uses: azure/cli@v2
+            uses: azure/cli@v2.1.0
             with:
               azcliversion: latest
               inlineScript: |
@@ -43,7 +51,7 @@ jobs:
                 --is-linux
 
           - name: Creating a php web app service
-            uses: azure/cli@v2
+            uses: azure/cli@v2.1.0
             with:
               azcliversion: latest
               inlineScript: |
@@ -55,7 +63,7 @@ jobs:
 
 
           - name: Creating a Deployment slot
-            uses: azure/cli@v2
+            uses: azure/cli@v2.1.0
             with:
               azcliversion: latest
               inlineScript: |
