@@ -113,7 +113,7 @@ jobs:
            id: deploy-to-webapp
            uses: azure/webapps-deploy@85270a1854658d167ab239bce43949edb336fa7c
            with:
-             app-name: ${{ .AZURE_APP_SERVICE_NAME }}
+             app-name: ${{ secrets.AZURE_APP_SERVICE_NAME }}
              package: .
              slot-name: ${{ secrets.SLOT_NAME}}
 
