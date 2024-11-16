@@ -22,6 +22,7 @@ jobs:
             uses: azure/login@v2
             with:
               creds: ${{ secrets.AZURE_CREDENTIALS }}
+              enable-AzPSSession: true
 
           - name: Ensure Resource Group exists
             uses: azure/cli@v2
