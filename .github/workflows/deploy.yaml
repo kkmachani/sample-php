@@ -13,7 +13,7 @@ permissions:
 jobs:
     create-appservice:
         name: create-appservice
-        runs-on: [ubuntu]
+        runs-on: [self-hosted]
         steps:
           - name: Checkout repo
             uses: actions/checkout@v4
@@ -82,7 +82,7 @@ jobs:
  
     build-php-app:
         name: Build Php App
-        runs-on: [ubuntu]
+        runs-on: [self-hosted]
         needs: create-appservice
         steps:
           - name: Setup PHP
@@ -105,7 +105,7 @@ jobs:
     deploy-to-app-service:
        name: Deploy to App Service
        needs: [create-appservice, build-php-app]
-       runs-on: [ubuntu]
+       runs-on: [self-hosted]
        steps:
          - name: Login to Azure
            uses: azure/login@v2
