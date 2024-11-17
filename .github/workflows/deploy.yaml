@@ -45,12 +45,12 @@ jobs:
               azcliversion: latest
               inlineScript: |
                 az appservice plan create \
-                
-                --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
-                --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-                --location "CentralIndia" \
-                --sku F1 \
-                --is-linux
+                  --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
+                  --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+                  --location "CentralIndia" \
+                  --sku F1 \
+                  --is-linux
+
 
           - name: Creating a php web app service
             uses: azure/cli@v2.1.0
@@ -58,11 +58,11 @@ jobs:
               azcliversion: latest
               inlineScript: |
                 az webapp create \
-                --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
-                --plan ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
-                --location "CentralIndia" \
-                --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-                --runtime "php|8.3"
+                  --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
+                  --plan ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
+                  --location "CentralIndia" \
+                  --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+                  --runtime "php|8.3"
 
 
           - name: Creating a Deployment slot
@@ -72,10 +72,10 @@ jobs:
               inlineScript: |
             
                 az webapp deployment slot create \
-                --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
-                --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-                --location "CentralIndia" \
-                --slot ${{ secrets.SLOT_NAME }}
+                  --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
+                  --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+                  --location "CentralIndia" \
+                  --slot ${{ secrets.SLOT_NAME }}
 
           
           - name: Get App service Publish profile
@@ -84,10 +84,10 @@ jobs:
               azcliversion: latest
               inlineScript: |
                 az webapp deployment list-publishing-profiles \
-                --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
-                --location "CentralIndia" \
-                --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-                --query "[0].publishUrl" -o tsv           
+                  --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
+                  --location "CentralIndia" \
+                  --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+                  --query "[0].publishUrl" -o tsv           
  
     build-php-app:
         name: Build Php App
