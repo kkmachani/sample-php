@@ -47,7 +47,8 @@ jobs:
                 az appservice plan create \
                 --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
                 --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
-                --sku F1
+                --region "Central India"
+                --sku Free
                 --is-linux
 
           - name: Creating a php web app service
@@ -58,6 +59,7 @@ jobs:
                 az webapp create \
                 --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
                 --plan ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
+                --region "Central India"
                 --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
                 --runtime "php|8.3"
 
@@ -71,6 +73,7 @@ jobs:
                 az webapp deployment slot create \
                 --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
                 --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+                --region "Central India"
                 --slot ${{ secrets.SLOT_NAME }}
 
           
@@ -81,6 +84,7 @@ jobs:
               inlineScript: |
                 az webapp deployment list-publishing-profiles \
                 --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
+                --region "Central India"
                 --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
                 --query "[0].publishUrl" -o tsv           
  
