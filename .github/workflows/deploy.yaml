@@ -35,17 +35,12 @@ jobs:
             
           - name: Creating an app service plan
             run: |
-              az appservice plan create \
-                --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
-                --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-                --location "Central US"
-                --is-linux
+              az appservice plan create --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --sku F1
 
 
           - name: Creating a php web app service
             run: |
-              az webapp create \
-                --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
+              az webapp create --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
                 --plan ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
                 --location "Central India" \
                 --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
