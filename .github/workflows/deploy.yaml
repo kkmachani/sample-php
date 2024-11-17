@@ -47,7 +47,7 @@ jobs:
                 az appservice plan create \
                   --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
                   --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-                  --location "Central India"
+                  --location "Central US"
                   --is-linux
 
 
@@ -73,7 +73,7 @@ jobs:
                 az webapp deployment slot create \
                   --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
                   --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-                  --location "Central India" \
+                  --location "Central US" \
                   --slot ${{ secrets.SLOT_NAME }}
 
           
@@ -84,7 +84,7 @@ jobs:
               inlineScript: |
                 az webapp deployment list-publishing-profiles \
                   --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
-                  --location "Central India" \
+                  --location "Central US" \
                   --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
                   --query "[0].publishUrl" -o tsv           
  
