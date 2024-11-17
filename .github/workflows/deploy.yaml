@@ -26,7 +26,10 @@ jobs:
 
           - name: Ensure Resource Group exists
             run: |
-              az group show --name ${{ secrets.AZURE_RESOURCE_GROUP }}
+              if ! az group show --name ${{ secrets.AZURE_RESOURCE_GROUP }}; then
+                echo "Resource group does not exist. Creating it..."
+                az group create --name ${{ secrets.AZURE_RESOURCE_GROUP }} --location "Central US"
+              fi
 
             
           - name: Azure CLI Script
