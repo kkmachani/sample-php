@@ -49,7 +49,7 @@ jobs:
             az appservice plan create \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
               --name ${{ vars.AZURE_APP_SERVICE_PLAN }} \
-              --sku F1
+              --sku B1
               --is-linux 
             sleep 30 
 
