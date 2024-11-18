@@ -31,55 +31,46 @@ jobs:
             az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
 
 
-  #  app-service-deployment:
-  #     name: App Service Deployment
-  #     needs: [azure-login]
-  #     runs-on: self-hosted
-  #     steps:
-  #       - name: Creating an app service plan
-  #         uses: azure/cli@v2
-  #         with:
-  #           azcliversion: latest
-  #           inlineScript: |
-  #             az appservice plan create \
-  #               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-  #               --name ${{ vars.AZURE_APP_SERVICE_PLAN }} \
-  #               --sku F1
-  #               --is-linux 
-  #             sleep 30 
+   app-service-deployment:
+      name: App Service Deployment
+      needs: [azure-login]
+      runs-on: self-hosted
+      steps:
+        - name: Creating an app service plan
+          run: |
+            az appservice plan create \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --name ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+              --sku F1
+              --is-linux 
+            sleep 30 
 
-  #       - name: Creating a php web app service
-  #         uses: azure/cli@v2
-  #         with:
-  #           azcliversion: latest
-  #           inlineScript: |
-  #             az webapp create \
-  #               --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
-  #               --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} \
-  #               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-  #               --runtime "php|8.3"
-  #             sleep 30
+        - name: Creating a php web app service
+          run: |
+            az webapp create \
+              --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+              --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --runtime "php|8.3"
+            sleep 30
 
 
-  #       - name: Creating a Deployment slot
-  #         uses: azure/cli@v2
-  #         with:
-  #           azcliversion: latest
-  #           inlineScript: |
-  #             az webapp deployment slot create \
-  #               --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
-  #               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-  #               --slot ${{ vars.SLOT_NAME }}
-  #             sleep 30
+        - name: Creating a Deployment slot
+          run: |
+            az webapp deployment slot create \
+              --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --slot ${{ vars.SLOT_NAME }}
+            sleep 30
 
           
-  #       - name: Get App service Publish profile
-  #         run: |
-  #           az webapp deployment list-publishing-profiles \
-  #             --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
-  #             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-  #             --query "[0].publishUrl" -o tsv   
-  #           sleep 15
+        - name: Get App service Publish profile
+          run: |
+            az webapp deployment list-publishing-profiles \
+              --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --query "[0].publishUrl" -o tsv   
+            sleep 15
    
   #  build-php-app:
   #    name: build-php-app
