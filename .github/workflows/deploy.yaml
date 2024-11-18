@@ -26,7 +26,7 @@ jobs:
           run: |
               az account show
 
-        - name: Show Resource Group
+        - name: Show Resource Groups
           uses: azure/cli@v2
           with:
             azcliversion: latest
