@@ -51,6 +51,7 @@ jobs:
               --name ${{ vars.AZURE_APP_SERVICE_PLAN }} \
               --sku B1
               --is-linux 
+              -- location "centralus"
             sleep 30 
 
         - name: Creating a php web app service
