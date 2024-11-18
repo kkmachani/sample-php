@@ -25,14 +25,15 @@ jobs:
         - name: Azure CLI Script
           run: |
               az account show
-        
-        - name: Resource group
-          run: |
-            az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
+
+        - name: Show Resource Group
+          uses: azure/cli@v2
+          with:
+            azcliversion: latest
+            inlineScript: |
+              az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
 
 
-
-    
   #  app-service-deployment:
   #     name: App Service Deployment
   #     needs: [azure-login]
