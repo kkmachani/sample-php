@@ -46,7 +46,13 @@ jobs:
         
         - name: Creating an app service plan
           run: |
-            az appservice plan create -g ${{ vars.AZURE_RESOURCE_GROUP }} -n ${{ vars.AZURE_APP_SERVICE_PLAN }}
+            az appservice plan create \
+              --name ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --sku B1 \
+              --is-linux \
+              --location centralus
+
             sleep 30 
 
         - name: Creating a php web app service
