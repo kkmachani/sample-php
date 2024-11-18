@@ -23,25 +23,12 @@ jobs:
             subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
         - name: Azure CLI Script
-          uses: azure/cli@v2
-          with:
-            azcliversion: latest
-            inlineScript: |
+          run: |
               az account show
 
-        # - name: Azure PowerShell script
-        #   uses: azure/powershell@v2
-        #   with:
-        #     azPSVersion: "latest"
-        #     inlineScript: |
-        #       Get-AzContext
-
         - name: Ensure Resource Group
-          uses: azure/cli@v2
-          with:
-            azcliversion: latest
-            inlineScript: |
-              az group show --name ${{ vars.AZURE_RESOURCE_GROUP }}
+          run: |
+            az group show --name ${{ vars.AZURE_RESOURCE_GROUP }}
     
   #  app-service-deployment:
   #     name: App Service Deployment
