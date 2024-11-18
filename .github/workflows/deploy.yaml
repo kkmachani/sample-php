@@ -51,7 +51,7 @@ jobs:
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
               --sku B1 \
               --is-linux \
-              --location westus
+              --location centralindia
 
             sleep 30 
 
