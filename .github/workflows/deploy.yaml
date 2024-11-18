@@ -27,11 +27,8 @@ jobs:
               az account show
 
         - name: Show Resource Groups
-          uses: azure/cli@v2
-          with:
-            azcliversion: latest
-            inlineScript: |
-              az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
+          run: |
+            az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
 
 
   #  app-service-deployment:
