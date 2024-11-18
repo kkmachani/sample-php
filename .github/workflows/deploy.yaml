@@ -1,115 +1,153 @@
 name: Deploy to Azure App Services
 
 on:
-  push:
-    branches:
-        - main
-        - feature
+
   workflow_dispatch:
 
-permissions:
-  id-token: write
-
 jobs:
-    create-appservice:
-        name: create-appservice
-        runs-on: [self-hosted]
-        steps:
-          - name: Checkout repo
-            uses: actions/checkout@v4
+   azure-login:
+      name: Azure Login
+      runs-on: self-hosted
+      steps:
+        - name: Checkout repo
+          uses: actions/checkout@v4
          
-          - name: Login to Azure
-            uses: azure/login@v2
-            with:
-              creds: ${{ secrets.AZURE_CREDENTIALS }}
-            
-
-          - name: Ensure Resource Group exists
-            run: |
-              if ! az group show --name ${{ secrets.AZURE_RESOURCE_GROUP }}; then
-                echo "Resource group does not exist. Creating it..."
-                az group create --name ${{ secrets.AZURE_RESOURCE_GROUP }} --location "Central US"
-              fi
-
-            
-          - name: Azure CLI Script
-            run: |
+        - name: Login to Azure # Azure Login with User Managed Identity
+          uses: azure/login@v2
+          with: 
+            auth-type: Identity
+            client-id: ${{ secrets.AZURE_CLIENT_ID }}
+            tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+            subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            enable-AzPSSession: true
+          
+        - name: Azure CLI Script
+          uses: azure/cli@v2
+          with:
+            azcliversion: latest
+            inlineScript: |
               az account show
-            
-          - name: Creating an app service plan
-            run: |
-              az appservice plan create --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --sku FREE --location "Central US"
 
-          - name: Creating a php web app service
-            run: |
-              az webapp create --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
-                --plan ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
-                --location "centralus" \
-                --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-                --runtime "php|8.3"
+        - name: Ensure Resource Group
+          uses: azure/cli@v2
+          with:
+            azcliversion: latest
+            inlineScript: |
+              az group show --name ${{ vars.AZURE_RESOURCE_GROUP }}
+    
+  #  app-service-deployment:
+  #     name: App Service Deployment
+  #     needs: [azure-login]
+  #     runs-on: self-hosted
+  #     steps:
+  #       - name: Creating an app service plan
+  #         uses: azure/cli@v2
+  #         with:
+  #           azcliversion: latest
+  #           inlineScript: |
+  #             az appservice plan create \
+  #               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+  #               --name ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+  #               --sku F1
+  #               --is-linux 
+  #             sleep 30 
+
+  #       - name: Creating a php web app service
+  #         uses: azure/cli@v2
+  #         with:
+  #           azcliversion: latest
+  #           inlineScript: |
+  #             az webapp create \
+  #               --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+  #               --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+  #               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+  #               --runtime "php|8.3"
+  #             sleep 30
 
 
-          - name: Creating a Deployment slot
-            run: |
-              az webapp deployment slot create \
-               --name ${{ secrets.AZURE_APP_SERVICE_PLAN }} \
-               --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-               --location "Central US" \
-               --slot ${{ secrets.SLOT_NAME }}
+  #       - name: Creating a Deployment slot
+  #         uses: azure/cli@v2
+  #         with:
+  #           azcliversion: latest
+  #           inlineScript: |
+  #             az webapp deployment slot create \
+  #               --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+  #               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+  #               --slot ${{ vars.SLOT_NAME }}
+  #             sleep 30
 
           
-          - name: Get App service Publish profile
-            run: |
-              az webapp deployment list-publishing-profiles \
-                --name ${{ secrets.AZURE_APP_SERVICE_NAME }} \
-                --location "Central US" \
-                --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
-                --query "[0].publishUrl" -o tsv           
- 
-    build-php-app:
-        name: Build Php App
-        runs-on: [self-hosted]
-        needs: create-appservice
-        steps:
-          - name: Setup PHP
-            uses: shivammathur/setup-php@v2
-            with:
-              php-version: '8.3'
+  #       - name: Get App service Publish profile
+  #         run: |
+  #           az webapp deployment list-publishing-profiles \
+  #             --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+  #             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+  #             --query "[0].publishUrl" -o tsv   
+  #           sleep 15
+   
+  #  build-php-app:
+  #    name: build-php-app
+  #    runs-on: self-hosted
+  #    needs: [azure-login, app-service-deployment]
+  #    steps:
+  #      - name: Setup PHP
+  #        uses: shivammathur/setup-php@v2
+  #        with:
+  #          php-version: '8.3'
 
-          - name: Install PHP dependencies
-            run: |
-              curl -sS https://getcomposer.org/installer | php
-              php composer.phar install 
+  #      - name: Install PHP dependencies
+  #        run: |
+  #          curl -sS https://getcomposer.org/installer | php
+  #          php composer.phar install 
+  #          composer --version  
 
-          - name: Check if composer.json exists
-            id: check_files
-            uses: andstor/file-existence-action@2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b
-            with:
-              files: 'composer.json'
+  #      - name: Upload artifact for deployment job
+  #        uses: actions/upload-artifact@v4
+  #        with:
+  #          name: php-app
+  #          path: .
+                  
+  #  deploy-to-app-service:
+  #     name: Deploy to App Service
+  #     needs: [azure-login, app-service-deployment, build-php-app]
+  #     runs-on: self-hosted
+  #     steps:
 
+  #       - name: Download artifact from build job
+  #         uses: actions/download-artifact@v4
+  #         with:
+  #           name: php-app
+        
+  #       - name: Deploying Php app to App service
+  #         uses: azure/webapps-deploy@v2
+  #         with:
+  #           app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+  #           slot-name: ${{ vars.SLOT_NAME }}
+  #           package: . # represents the current directory
 
-    deploy-to-app-service:
-       name: Deploy to App Service
-       needs: [create-appservice, build-php-app]
-       runs-on: [self-hosted]
-       steps:
-         - name: Login to Azure
-           uses: azure/login@v2
-           with:  
-             client-id: ${{ secrets.AZURE_CLIENT_ID }}
-             tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-             client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-             secret-id: ${{ secrets.AZURE_SECRET_ID }}
-             subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  #  create-pull-request:
+  #     name: Pull request to main
+  #     runs-on: self-hosted
+  #     needs: [azure-login, app-service-deployment, build-php-app, deploy-to-app-service]
+  #     steps: 
+  #       - name: Setup Github CLI
+  #         uses: sersoft-gmbh/setup-gh-cli-action@v2
+  #         with:
+  #           version: latest
+         
+  #       - name: verify github cli version
+  #         run: gh --version
 
-         - name: 'Deploy to Azure Web App'
-           id: deploy-to-webapp
-           uses: azure/webapps-deploy@85270a1854658d167ab239bce43949edb336fa7c
-           with:
-             app-name: ${{ secrets.AZURE_APP_SERVICE_NAME }}
-             package: .
-             slot-name: ${{ secrets.SLOT_NAME}}
+  #       - name: Creating a pull request
+  #         run: |
+  #            gh pr create --base master --head feature
 
+  #  deploy-to-production-slot:
+  #     name: Deploy App Service to Production slot
+  #     needs: [azure-login, app-service-deployment, build-php-app, deploy-to-app-service, create-pull-request]
+  #     runs-on: self-hosted
+
+       
 
     
              
