@@ -1,6 +1,6 @@
-name: Deploy to Azure App Services
+name: Deploy to Azure App Service
 
-on:
+on: 
 
   push:
     branches:
