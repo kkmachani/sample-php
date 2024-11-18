@@ -2,7 +2,9 @@ name: Deploy to Azure App Services
 
 on:
 
-  workflow_dispatch:
+  push:
+    branches:
+       - feature
 
 jobs:
    azure-login:
