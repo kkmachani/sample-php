@@ -49,7 +49,7 @@ jobs:
             az appservice plan create \
               --name ${{ vars.AZURE_APP_SERVICE_PLAN }} \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --sku B1 \
+              --sku F1 \
               --is-linux \
               
 
