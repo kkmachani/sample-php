@@ -1,8 +1,10 @@
-name: deploy to Azure App Service(staging-slot)
+name: deploy to Azure App Service(staging slot)
 
 on: 
-  
-  workflow_dispatch:
+
+  push:
+    branches:
+       - feature
 
 jobs:
    azure-appservice:
@@ -37,7 +39,7 @@ jobs:
               --sku F1 
               sleep 30 
 
-        - name: Creating a php web app service
+        - name: Creating a app service
           run: |
             az webapp create \
               --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
