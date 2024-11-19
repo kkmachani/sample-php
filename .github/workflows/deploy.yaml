@@ -7,8 +7,8 @@ on:
        - feature
 
 jobs:
-   azure-login:
-      name: Azure Login
+   azure-appservice:
+      name: Azure App Service
       runs-on: self-hosted
       steps:
         - name: Checkout repo
@@ -26,120 +26,85 @@ jobs:
           run: |
               az account show
 
-        # - name: Show Resource Groups
-        #   run: |
-        #     az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
-
-
-  #  app-service-deployment:
-  #     name: App Service Deployment
-  #     needs: [azure-login]
-  #     runs-on: self-hosted
-  #     steps:
-  #       - name: Login to Azure # Azure Login with User Managed Identity
-  #         uses: azure/login@v2
-  #         with: 
-  #           auth-type: Identity
-  #           client-id: ${{ secrets.AZURE_CLIENT_ID }}
-  #           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-  #           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        - name: Show Resource Groups
+          run: |
+            az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
         
-  #       - name: Creating an app service plan
-  #         run: |
-  #           az appservice plan create -g \
-  #             ${{ vars.AZURE_RESOURCE_GROUP }} \
-  #             -n ${{ vars.AZURE_APP_SERVICE_PLAN }} \
-  #             --sku F1
-  #             sleep 30 
+        - name: Creating an app service plan
+          run: |
+            az appservice plan create -g \
+              ${{ vars.AZURE_RESOURCE_GROUP }} \
+              -n ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+              --is-linux \
+              --sku F1 
+              sleep 30 
 
-  #       - name: Creating a php web app service
-  #         run: |
-  #           az webapp create \
-  #             --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
-  #             --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} \
-  #             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-  #             --runtime "php|8.3"
-  #           sleep 30
+        - name: Creating a php web app service
+          run: |
+            az webapp create \
+              --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+              --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --runtime "php|8.3"
+            sleep 30
 
+        - name: Creating a Deployment slot
+          run: |
+            az webapp deployment slot create \
+              --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --slot ${{ vars.SLOT_NAME }}
+            sleep 30
 
-  #       - name: Creating a Deployment slot
-  #         run: |
-  #           az webapp deployment slot create \
-  #             --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
-  #             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-  #             --slot ${{ vars.SLOT_NAME }}
-  #           sleep 30
+        - name: Get App service Publish profile
+          run: |
+            az webapp deployment list-publishing-profiles \
+              --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --query "[0].publishUrl" -o tsv   
+            sleep 15
 
-          
-  #       - name: Get App service Publish profile
-  #         run: |
-  #           az webapp deployment list-publishing-profiles \
-  #             --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
-  #             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-  #             --query "[0].publishUrl" -o tsv   
-  #           sleep 15
-   
-  #  build-php-app:
-  #    name: build-php-app
-  #    runs-on: self-hosted
-  #    needs: [azure-login, app-service-deployment]
-  #    steps:
-  #      - name: Setup PHP
-  #        uses: shivammathur/setup-php@v2
-  #        with:
-  #          php-version: '8.3'
+        
+   build-php-app:
+     name: build-php-app
+     runs-on: self-hosted
+     needs: [azure-appservice]
+     steps:
+       - name: Setup PHP
+         uses: shivammathur/setup-php@v2
+         with:
+           php-version: '8.3'
 
-  #      - name: Install PHP dependencies
-  #        run: |
-  #          curl -sS https://getcomposer.org/installer | php
-  #          php composer.phar install 
-  #          composer --version  
+       - name: Install PHP dependencies
+         run: |
+           curl -sS https://getcomposer.org/installer | php
+           php composer.phar install 
+           composer --version  
 
-  #      - name: Upload artifact for deployment job
-  #        uses: actions/upload-artifact@v4
-  #        with:
-  #          name: php-app
-  #          path: .
+       - name: Upload artifact for deployment job
+         uses: actions/upload-artifact@v4
+         with:
+           name: php-app
+           path: .
                   
-  #  deploy-to-app-service:
-  #     name: Deploy to App Service
-  #     needs: [azure-login, app-service-deployment, build-php-app]
-  #     runs-on: self-hosted
-  #     steps:
-
-  #       - name: Download artifact from build job
-  #         uses: actions/download-artifact@v4
-  #         with:
-  #           name: php-app
+   deploy-to-app-service:
+      name: Deploy to App Service
+      needs: [azure-appservice, build-php-app]
+      runs-on: self-hosted
+      steps:
+        - name: Download artifact from build job
+          uses: actions/download-artifact@v4
+          with:
+            name: php-app
         
-  #       - name: Deploying Php app to App service
-  #         uses: azure/webapps-deploy@v2
-  #         with:
-  #           app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
-  #           slot-name: ${{ vars.SLOT_NAME }}
-  #           package: . # represents the current directory
+        - name: Deploying Php app to App service
+          uses: azure/webapps-deploy@v2
+          with:
+            app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+            slot-name: ${{ vars.SLOT_NAME }}
+            package: . # represents the current directory
 
-  #  create-pull-request:
-  #     name: Pull request to main
-  #     runs-on: self-hosted
-  #     needs: [azure-login, app-service-deployment, build-php-app, deploy-to-app-service]
-  #     steps: 
-  #       - name: Setup Github CLI
-  #         uses: sersoft-gmbh/setup-gh-cli-action@v2
-  #         with:
-  #           version: latest
-         
-  #       - name: verify github cli version
-  #         run: gh --version
 
-  #       - name: Creating a pull request
-  #         run: |
-  #            gh pr create --base master --head feature
-
-  #  deploy-to-production-slot:
-  #     name: Deploy App Service to Production slot
-  #     needs: [azure-login, app-service-deployment, build-php-app, deploy-to-app-service, create-pull-request]
-  #     runs-on: self-hosted
 
        
 
