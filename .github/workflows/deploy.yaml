@@ -26,61 +26,58 @@ jobs:
           run: |
               az account show
 
-        - name: Show Resource Groups
-          run: |
-            az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
+        # - name: Show Resource Groups
+        #   run: |
+        #     az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
 
 
-   app-service-deployment:
-      name: App Service Deployment
-      needs: [azure-login]
-      runs-on: self-hosted
-      steps:
-        - name: Login to Azure # Azure Login with User Managed Identity
-          uses: azure/login@v2
-          with: 
-            auth-type: Identity
-            client-id: ${{ secrets.AZURE_CLIENT_ID }}
-            tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-            subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  #  app-service-deployment:
+  #     name: App Service Deployment
+  #     needs: [azure-login]
+  #     runs-on: self-hosted
+  #     steps:
+  #       - name: Login to Azure # Azure Login with User Managed Identity
+  #         uses: azure/login@v2
+  #         with: 
+  #           auth-type: Identity
+  #           client-id: ${{ secrets.AZURE_CLIENT_ID }}
+  #           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+  #           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         
-        - name: Creating an app service plan
-          run: |
-            az appservice plan create \
-              --name ${{ vars.AZURE_APP_SERVICE_PLAN }} \
-              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --sku F1 \
-              --is-linux \
-              
+  #       - name: Creating an app service plan
+  #         run: |
+  #           az appservice plan create -g \
+  #             ${{ vars.AZURE_RESOURCE_GROUP }} \
+  #             -n ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+  #             --sku F1
+  #             sleep 30 
 
-            sleep 30 
-
-        - name: Creating a php web app service
-          run: |
-            az webapp create \
-              --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
-              --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} \
-              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --runtime "php|8.3"
-            sleep 30
+  #       - name: Creating a php web app service
+  #         run: |
+  #           az webapp create \
+  #             --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+  #             --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+  #             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+  #             --runtime "php|8.3"
+  #           sleep 30
 
 
-        - name: Creating a Deployment slot
-          run: |
-            az webapp deployment slot create \
-              --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
-              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --slot ${{ vars.SLOT_NAME }}
-            sleep 30
+  #       - name: Creating a Deployment slot
+  #         run: |
+  #           az webapp deployment slot create \
+  #             --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+  #             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+  #             --slot ${{ vars.SLOT_NAME }}
+  #           sleep 30
 
           
-        - name: Get App service Publish profile
-          run: |
-            az webapp deployment list-publishing-profiles \
-              --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
-              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --query "[0].publishUrl" -o tsv   
-            sleep 15
+  #       - name: Get App service Publish profile
+  #         run: |
+  #           az webapp deployment list-publishing-profiles \
+  #             --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+  #             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+  #             --query "[0].publishUrl" -o tsv   
+  #           sleep 15
    
   #  build-php-app:
   #    name: build-php-app
