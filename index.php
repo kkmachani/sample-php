@@ -1,3 +1,6 @@
 <?php
 
-echo "Your App service is working!";
+// Output a message to confirm that the app service is working
+echo "Your App Service is working!";
+
+?>
