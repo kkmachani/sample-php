@@ -30,23 +30,23 @@ jobs:
           run: |
             az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
         
-  #       - name: Creating an app service plan
-  #         run: |
-  #           az appservice plan create -g \
-  #             ${{ vars.AZURE_RESOURCE_GROUP }} \
-  #             -n ${{ vars.AZURE_APP_SERVICE_PLAN }} \
-  #             --is-linux \
-  #             --sku F1 
-  #             sleep 30 
+        - name: Creating an app service plan
+          run: |
+            az appservice plan create -g \
+              ${{ vars.AZURE_RESOURCE_GROUP }} \
+              -n ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+              --is-linux \
+              --sku F1 
+              sleep 30 
 
-  #       - name: Creating a app service
-  #         run: |
-  #           az webapp create \
-  #             --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
-  #             --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} \
-  #             --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-  #             --runtime "php|8.3"
-  #           sleep 30
+        - name: Creating a app service
+          run: |
+            az webapp create \
+              --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+              --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --runtime "php|8.3"
+            sleep 30
 
   #       - name: Creating a Deployment slot
   #         run: |
