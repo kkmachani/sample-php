@@ -84,22 +84,22 @@ jobs:
            name: php-app
            path: .
                   
-  #  deploy-to-app-service:
-  #     name: Deploy to App Service
-  #     needs: [azure-appservice, build-php-app]
-  #     runs-on: self-hosted
-  #     steps:
-  #       - name: Download artifact from build job
-  #         uses: actions/download-artifact@v4
-  #         with:
-  #           name: php-app
+   deploy-to-app-service:
+      name: Deploy to App Service
+      needs: [azure-appservice, build-php-app]
+      runs-on: self-hosted
+      steps:
+        - name: Download artifact from build job
+          uses: actions/download-artifact@v4
+          with:
+            name: php-app
         
-  #       - name: Deploying Php app to App service
-  #         uses: azure/webapps-deploy@v2
-  #         with:
-  #           app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
-  #           slot-name: ${{ vars.SLOT_NAME }}
-  #           package: . # represents the current directory
+        - name: Deploying Php app to App service
+          uses: azure/webapps-deploy@v2
+          with:
+            app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+            slot-name: ${{ vars.SLOT_NAME }}
+            package: . # represents the current directory
 
     
 
