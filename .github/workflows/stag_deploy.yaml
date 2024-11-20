@@ -103,7 +103,7 @@ jobs:
 
         - name: Get App Service URL of staging slot
           run: |
-            echo "App Service URL (Staging Slot): https://${{ secrets.AZURE_APP_SERVICE_NAME }}-staging.azurewebsites.net"
+            echo "App Service URL (Staging Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}-staging.azurewebsites.net"
 
     
 
