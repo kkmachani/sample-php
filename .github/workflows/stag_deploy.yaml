@@ -78,12 +78,6 @@ jobs:
          with:
            php-version: '8.3'
 
-       - name: Install PHP dependencies
-         run: |
-           curl -sS https://getcomposer.org/installer | php
-           php composer.phar install 
-           composer --version  
-
        - name: Upload artifact for deployment job
          uses: actions/upload-artifact@v4
          with:
