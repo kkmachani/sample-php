@@ -59,16 +59,6 @@ jobs:
               echo "Staging slot exists."
             fi
             sleep 20
-        
-        - name: Creating Prod Deployment slot
-          run: |
-            if ! az webapp deployment slot list --name ${{ vars.AZURE_APP_SERVICE_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "prod"'; then
-             echo "Deployment slot "prod" not exists. Creating it..."
-             az webapp deployment slot create --name ${{ vars.AZURE_APP_SERVICE_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --slot prod
-            else
-              echo "Prod slot exists"
-            fi
-            sleep 20
 
         - name: Get App service Publish profile
           run: |
@@ -78,27 +68,27 @@ jobs:
               --query "[0].publishUrl" -o tsv   
             sleep 15
 
-  #  build-php-app:
-  #    name: build-php-app
-  #    runs-on: self-hosted
-  #    needs: [azure-appservice]
-  #    steps:
-  #      - name: Setup PHP
-  #        uses: shivammathur/setup-php@v2
-  #        with:
-  #          php-version: '8.3'
+   build-php-app:
+     name: build-php-app
+     runs-on: self-hosted
+     needs: [azure-appservice]
+     steps:
+       - name: Setup PHP
+         uses: shivammathur/setup-php@v2
+         with:
+           php-version: '8.3'
 
-  #      - name: Install PHP dependencies
-  #        run: |
-  #          curl -sS https://getcomposer.org/installer | php
-  #          php composer.phar install 
-  #          composer --version  
+       - name: Install PHP dependencies
+         run: |
+           curl -sS https://getcomposer.org/installer | php
+           php composer.phar install 
+           composer --version  
 
-  #      - name: Upload artifact for deployment job
-  #        uses: actions/upload-artifact@v4
-  #        with:
-  #          name: php-app
-  #          path: .
+       - name: Upload artifact for deployment job
+         uses: actions/upload-artifact@v4
+         with:
+           name: php-app
+           path: .
                   
   #  deploy-to-app-service:
   #     name: Deploy to App Service
