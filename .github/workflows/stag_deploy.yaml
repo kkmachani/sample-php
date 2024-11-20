@@ -38,7 +38,7 @@ jobs:
             else
               echo "App service plan already exists. Skipping creation."
             fi
-            sleep 30 
+            sleep 10 
 
         - name: Creating a app service
           run: |
@@ -48,7 +48,7 @@ jobs:
             else
               echo "App service already exists"
             fi
-            sleep 30
+            sleep 10
 
         - name: Creating a staging Deployment slot
           run: |
@@ -58,7 +58,7 @@ jobs:
             else
               echo "Staging slot exists."
             fi
-            sleep 20
+            sleep 10
 
         - name: Get App service Publish profile
           run: |
@@ -66,7 +66,7 @@ jobs:
               --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
               --query "[0].publishUrl" -o tsv   
-            sleep 15
+            sleep 10
 
    build-php-app:
      name: build-php-app
@@ -100,6 +100,10 @@ jobs:
             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
             slot-name: ${{ vars.SLOT_NAME }}
             package: . # represents the current directory
+
+        - name: Get App Service URL of staging slot
+          run: |
+            echo "App Service URL (Staging Slot): https://${{ secrets.AZURE_APP_SERVICE_NAME }}-staging.azurewebsites.net"
 
     
 
