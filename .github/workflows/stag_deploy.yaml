@@ -120,7 +120,7 @@ jobs:
           with:
             token: ${{ secrets.GITHUB_TOKEN }}
             branch: feature
-            base: main
+            base: master
             title: "Creating a pull request to main"
 
    deploy-to-app-service-prod-slot:
