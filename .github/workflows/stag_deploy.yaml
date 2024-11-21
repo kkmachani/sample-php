@@ -132,7 +132,7 @@ jobs:
       needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, approval-to-production]
       runs-on: self-hosted
       steps:
-        - name: Deploying Php app to App service production slot
+        - name: Deploying Php app to App service production slots
           uses: azure/webapps-deploy@v2
           with:
             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
