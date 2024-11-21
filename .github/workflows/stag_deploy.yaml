@@ -52,7 +52,7 @@ jobs:
             fi
             sleep 10 
 
-        - name: Creating a app service
+        - name: Creating a app services
           run: |
             if ! az webapp list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "kkphp"'; then
              echo "App service doesnot exists. Creating it.."
