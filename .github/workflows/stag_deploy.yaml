@@ -135,7 +135,7 @@ jobs:
           with:
             name: php-app
         
-        - name: Deploying Php app to App service production slots
+        - name: Deploying Php app to App service production slot
           uses: azure/webapps-deploy@v2
           with:
             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
