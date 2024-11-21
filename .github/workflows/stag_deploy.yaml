@@ -123,7 +123,6 @@ jobs:
      needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot ]
      environment: 
        name: Prod
-       url: https://${{ vars.AZURE_APP_SERVICE_NAME }}.azurewebsites.net
      steps:
       - name: Approval Required for Production
         run: echo "Waiting for manual approval to deploy to production"
