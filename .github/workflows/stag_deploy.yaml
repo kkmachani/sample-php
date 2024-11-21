@@ -123,7 +123,10 @@ jobs:
      environment: 
        name: Prod
        url: https://${{ vars.AZURE_APP_SERVICE_NAME }}.azurewebsites.net
-     if: github.event.pull_request.merged == true
+     if: github.ref == 'refs/heads/master'
+     steps:
+      - name: Approval Required for Production
+        run: echo "Waiting for manual approval to deploy to production"
      
    deploy-to-app-service-prod-slot:
       name: Deploy to App Service Prod Slot
