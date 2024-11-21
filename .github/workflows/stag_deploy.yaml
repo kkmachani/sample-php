@@ -132,6 +132,11 @@ jobs:
       needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, approval-to-production]
       runs-on: self-hosted
       steps:
+        - name: Download artifact from build job
+          uses: actions/download-artifact@v4
+          with:
+            name: php-app
+        
         - name: Deploying Php app to App service production slots
           uses: azure/webapps-deploy@v2
           with:
