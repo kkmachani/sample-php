@@ -4,13 +4,17 @@ on:
 
   push:
     branches:
-       - main
-       - feature
+      - feature/*
 
 
   pull_request:
     branches:
-       - main
+      - master
+    types:
+      - opened
+      - synchronize
+      - reopened
+       
 
 permissions:
   contents: write
@@ -112,32 +116,25 @@ jobs:
           run: |
             echo "App Service URL (Staging Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}-staging.azurewebsites.net"
         
-   merge-and-pull-request:
-      name: Merging into Main
-      needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot]
-      runs-on: self-hosted
-      steps:
-        - name: Checkout Code
-          uses: actions/checkout@v4
-
-        - name: create a pull request 
-          uses: peter-evans/create-pull-request@v7
-          with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-            branch: feature
-            base: master
-            title: "Creating a pull request to main"
-
+   approval-to-production:
+     name: Approval-to-Production
+     runs-on: self-hosted
+     needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot ]
+     environment: 
+       name: Prod
+       url: https://${{ vars.AZURE_APP_SERVICE_NAME }}.azurewebsites.net
+     if: github.event.pull_request.merged == true
+     
    deploy-to-app-service-prod-slot:
       name: Deploy to App Service Prod Slot
-      needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, merge-and-pull-request]
+      needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, approval-to-production]
       runs-on: self-hosted
       steps:
         - name: Deploying Php app to App service production slot
           uses: azure/webapps-deploy@v2
           with:
             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
-            slot-name: ${{ vars.SLOT_NAME }}
+            slot-name: production
             package: . # represents the current directory
 
           
