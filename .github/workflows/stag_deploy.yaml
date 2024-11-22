@@ -1,19 +1,19 @@
 name: Deploy to Azure App Service(staging slot)
 
 on: 
- workflow_dispatch:
-
-  # push:
-  #   branches:
-  #     - feature
-  #     - master
 
 
-  # pull_request:
-  #   branches:
-  #     - master
-  #   types:
-  #     - closed
+  push:
+    branches:
+      - feature
+      - master
+
+
+  pull_request:
+    branches:
+      - master
+    types:
+      - closed
        
 
 permissions:
