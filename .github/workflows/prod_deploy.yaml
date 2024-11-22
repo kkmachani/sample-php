@@ -1,4 +1,4 @@
-name: Deploy to Azure App Service(production)
+name: Deploy to Azure App Service(production slot)
 
 on: 
  workflow_dispatch:
