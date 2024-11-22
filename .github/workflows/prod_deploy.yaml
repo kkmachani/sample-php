@@ -1,0 +1,154 @@
+name: Deploy to Azure App Service(production slot)
+
+on: [workflow_dispatch]
+
+jobs:
+   staging:
+      name: Deploying to Staging slot
+      runs-on: self-hosted
+      steps:
+       - name: Checkout repo
+         uses: actions/checkout@v4
+         with: 
+           ref: feature
+
+       - name: Creating App service
+         run: |
+           az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
+           
+           if ! az appservice plan list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "kkasp"'; then
+            echo " App service does not exist. Creating it..."
+             az appservice plan create -g ${{ vars.AZURE_RESOURCE_GROUP }} -n ${{ vars.AZURE_APP_SERVICE_PLAN }} --is-linux --sku P0V3
+           else
+            echo "App service plan already exists. Skipping creation..."
+           fi
+            sleep 10 
+
+            if ! az webapp list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "kkphp"'; then 
+             echo "App service doesnot exists. Creating it.."
+             az webapp create --name ${{ vars.AZURE_APP_SERVICE_NAME }} --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --runtime "php|8.3"
+            else
+              echo "App service already exists. Skipping Creation..."
+            fi
+            sleep 10
+
+            if ! az webapp deployment slot list --name ${{ vars.AZURE_APP_SERVICE_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "staging"'; then
+             echo "Deployment slot "staging" not exists. Creating it.."
+             az webapp deployment slot create --name ${{ vars.AZURE_APP_SERVICE_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --slot ${{ vars.SLOT_NAME }}
+            else
+              echo "Staging slot exists. Skipping Creation..."
+            fi
+            sleep 10
+          
+            az webapp deployment list-publishing-profiles --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --xml > publish-profile.xml
+
+       - name: Build Php-app
+         uses: shivammathur/setup-php@v2
+         with:
+           php-version: '8.3'
+      
+       - name: Upload artifact for deployment job
+         uses: actions/upload-artifact@v4
+         with:
+            name: php-app
+            path: .
+      
+       - name: Download artifact from build job
+         uses: actions/download-artifact@v4
+         with:
+            name: php-app
+
+       - name: Deploying Php app to App service
+         uses: azure/webapps-deploy@v2
+         with:
+            app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+            slot-name: ${{ vars.SLOT_NAME }}
+            package: . # represents the current directory
+
+       - name: Get App Service URL of staging slot
+         run: |
+            echo "App Service URL (Staging Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}-staging.azurewebsites.net"
+        
+   production:
+      name: Deploying to Staging slot
+      runs-on: self-hosted
+      environment:
+        name: Prod
+      permissions:
+        contents: write
+      steps:
+        - name: Checkout repo
+          uses: actions/checkout@v4
+          with: 
+            ref: master
+        
+        - name: Creating App service
+          run: |
+            az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
+              
+            if ! az appservice plan list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "kkasp"'; then
+             echo " App service does not exist. Creating it..."
+             az appservice plan create -g ${{ vars.AZURE_RESOURCE_GROUP }} -n ${{ vars.AZURE_APP_SERVICE_PLAN }} --is-linux --sku P0V3
+            else
+             echo "App service plan already exists. Skipping creation..."
+            fi
+            sleep 10 
+   
+            if ! az webapp list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "kkphp"'; then 
+             echo "App service doesnot exists. Creating it.."
+             az webapp create --name ${{ vars.AZURE_APP_SERVICE_NAME }} --plan ${{ vars.AZURE_APP_SERVICE_PLAN }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --runtime "php|8.3"
+            else
+             echo "App service already exists. Skipping Creation..."
+            fi
+            sleep 10
+   
+            if ! az webapp deployment slot list --name ${{ vars.AZURE_APP_SERVICE_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "staging"'; then
+             echo "Deployment slot "staging" not exists. Creating it.."
+             az webapp deployment slot create --name ${{ vars.AZURE_APP_SERVICE_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --slot production
+            else
+             echo "Staging slot exists. Skipping Creation..."
+            fi
+            sleep 10
+             
+            az webapp deployment list-publishing-profiles --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
+              --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+              --xml > publish-profile.xml
+
+        - name: Build Php-app
+          uses: shivammathur/setup-php@v2
+          with:
+            php-version: '8.3'
+           
+        - name: Upload artifact for deployment job
+          uses: actions/upload-artifact@v4
+          with:
+            name: php-app
+            path: .
+
+        - name: Approval Required for Production
+          run: echo "Waiting for manual approval to deploy to production"
+          env:
+            APPROVAL_REQUIRED: true
+           
+        - name: Download artifact from build job
+          uses: actions/download-artifact@v4
+          with:
+            name: php-app
+     
+        - name: Deploying Php app to App service
+          uses: azure/webapps-deploy@v2
+          with:
+            app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+            slot-name: production
+            package: . # represents the current directory
+     
+        - name: Get App Service URL of staging slot
+          run: |
+            echo "App Service URL (Production Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}.azurewebsites.net"
+     
+      
+
+               
+
