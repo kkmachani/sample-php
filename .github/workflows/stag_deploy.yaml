@@ -1,4 +1,4 @@
-name: Deployment of App Service
+name: Deploy to Azure App Service
 
 on: # defined to trigger the jobs of the workflow
  
