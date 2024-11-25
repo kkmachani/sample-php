@@ -1,20 +1,8 @@
-name: Deploy to Azure App Service(staging slot)
+name: Deployment of App Service
 
-on: 
-
-
-  push:
-    branches:
-      - feature
-      - master
-
-
-  pull_request:
-    branches:
-      - master
-    types:
-      - closed
-       
+on: # defined to trigger the jobs of the workflow
+ 
+ workflow_dispatch:
 
 permissions:
   contents: write
@@ -115,20 +103,41 @@ jobs:
         - name: Get App Service URL of staging slot
           run: |
             echo "App Service URL (Staging Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}-staging.azurewebsites.net"
-        
+          
+   
+   push-to-main:
+     name: Push to Main Branch
+     needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot]
+     runs-on: self-hosted
+     environment:
+       name: Prod
+     steps:
+       - name: Setup git
+         run: |
+           git config user.name "kkmachani"
+           git config user.email "kkmachani@gmail.com"
+
+       - name: Merging into Master
+         run: |
+           git fetch origin
+           git checkout master
+           git merge ${{ github.head_ref }}
+           
+      
    approval-to-production:
      name: Approval-to-Production
      runs-on: self-hosted
-     needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot ]
+     needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, push-to-main]
      environment: 
        name: Prod
      steps:
-      - name: Approval Required for Production
-        run: echo "Waiting for manual approval to deploy to production"
+       - name: Approval Required for Production
+         run: echo "Waiting for manual approval to deploy to production"
      
+   
    deploy-to-app-service-prod-slot:
       name: Deploy to App Service Prod Slot
-      needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, approval-to-production]
+      needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, push-to-main, approval-to-production]
       runs-on: self-hosted
       steps:
         - name: Download artifact from build job
