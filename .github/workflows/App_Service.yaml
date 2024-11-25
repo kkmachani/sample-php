@@ -5,7 +5,6 @@ on: # defined to trigger the jobs of the workflow
  push:
    branches:
      - feature
-     - master
 jobs:
    azure-appservice:
       name: Azure App Service
@@ -103,32 +102,12 @@ jobs:
           run: |
             echo "App Service URL (Staging Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}-staging.azurewebsites.net"
           
-   
-   push-to-main:
-     name: Push to Main Branch
-     needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot]
-     runs-on: self-hosted
-     environment:
-       name: Prod
-     steps:
-       - name: Setup git
-         run: |
-           git config user.name "kkmachani"
-           git config user.email "kkmachani@gmail.com"
-
-       - name: Merging into Master
-         run: |
-           git fetch origin
-           git pull origin feature
-           git checkout master
-           git merge feature --allow-unrelated-histories
-           git push origin master
            
       
    approval-to-production:
      name: Approval-to-Production
      runs-on: self-hosted
-     needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, push-to-main]
+     needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot]
      environment: 
        name: Prod
      steps:
@@ -138,7 +117,7 @@ jobs:
    
    deploy-to-app-service-prod-slot:
       name: Deploy to App Service Prod Slot
-      needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, push-to-main, approval-to-production]
+      needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, approval-to-production]
       runs-on: self-hosted
       steps:
         - name: Download artifact from build job
@@ -146,11 +125,6 @@ jobs:
           with:
             name: php-app
 
-        
-        - name: Checkout master branch
-          uses: actions/checkout@v4
-          with:
-            ref: master
         
         - name: Deploying Php app to App service production slot
           uses: azure/webapps-deploy@v2
