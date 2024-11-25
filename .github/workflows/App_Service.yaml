@@ -1,8 +1,8 @@
-name: Azure App Service Deployment
+name: Deploy to Azure App Service
 
 on: # defined to trigger the jobs of the workflow
  
-  workflow_dispatch:
+  workflow_dispatch
 
 jobs:
    azure-appservice:
