@@ -4,9 +4,6 @@ on: # defined to trigger the jobs of the workflow
  
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
    azure-appservice:
       name: Azure App Service
