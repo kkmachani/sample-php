@@ -2,7 +2,7 @@ name: Deployment of App Service
 
 on: # defined to trigger the jobs of the workflow
  
- workflow_dispatch:
+  workflow_dispatch:
 
 permissions:
   contents: write
