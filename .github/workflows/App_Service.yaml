@@ -121,7 +121,7 @@ jobs:
            git fetch origin
            git pull origin feature
            git checkout master
-           git merge feature
+           git merge feature --allow-unrelated-histories
            git push origin master
            
       
@@ -145,6 +145,12 @@ jobs:
           uses: actions/download-artifact@v4
           with:
             name: php-app
+
+        
+        - name: Checkout master branch
+          uses: actions/checkout@v4
+          with:
+            ref: master
         
         - name: Deploying Php app to App service production slot
           uses: azure/webapps-deploy@v2
