@@ -2,8 +2,10 @@ name: Deploy to Azure App Service
 
 on: # defined to trigger the jobs of the workflow
  
-  workflow_dispatch
-
+ push:
+   branches:
+     - feature
+     - master
 jobs:
    azure-appservice:
       name: Azure App Service
@@ -117,8 +119,10 @@ jobs:
        - name: Merging into Master
          run: |
            git fetch origin
+           git pull origin feature
            git checkout master
-           git merge ${{ github.head_ref }}
+           git merge feature
+           git push origin master
            
       
    approval-to-production:
