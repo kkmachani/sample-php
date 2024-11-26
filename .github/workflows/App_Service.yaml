@@ -114,14 +114,12 @@ jobs:
      name: Deploy Artifacts into Production Slot
      runs-on: self-hosted
      needs: [deploying-appservice, build-php-app, deploying-artifacts-in-staging-slot]
-     env:
+     environment:
        name: Prod
      steps:
        - name: Approval Acceptance
- # need manual approval before deploying into production slot
-         run: | 
-           echo "Approval Accepted. Ready to deploy in Production..."
-           
+         run: echo "Approval done. Ready to deploy artifacts in Production...""
+       
        - name: Download artifact from build job
          uses: actions/download-artifact@v4
          with:
