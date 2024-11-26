@@ -88,8 +88,8 @@ jobs:
            path: .
                   
    
-   deploy-to-app-service-staging-slot:
-      name: Deploy to App Service staging slot
+   deploying-artifacts-in-staging-slot:
+      name: Deploy Artifacts into staging slot
       needs: [azure-appservice, build-php-app]
       runs-on: self-hosted
       steps:
@@ -99,38 +99,47 @@ jobs:
             name: php-app
         
         - name: Deploying Php app to App service
-          uses: azure/webapps-deploy@v2
-          with:
-            app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
-            slot-name: ${{ vars.SLOT_NAME }}
-            package: . # represents the current directory
+          run: |
+            echo "Started Deploying in Staging slot..."
+            uses: azure/webapps-deploy@v2
+            with:
+              app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+              slot-name: ${{ vars.SLOT_NAME }}
+              package: . # represents the current directory
+            echo "Deploying in Staging slot completed Successfully"
 
         - name: Get App Service URL of staging slot
           run: |
             echo "App Service URL (Staging Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}-staging.azurewebsites.net"
           
            
-   deploy-to-app-service-production-slot:
-     name: Deploy to App service Production Slot
+   deploying-artifacts-in-production-slot:
+     name: Deploy Artifacts into Production Slot
      runs-on: self-hosted
-     needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot]
+     needs: [azure-appservice, build-php-app, deploying-artifacts-in-staging-slot]
      environment: 
        name: Prod
      steps:
        - name: Approval Required for Production
-         run: echo "Waiting for manual approval to deploy to production"
-     
+         run: | 
+           echo "Waiting for manual approval to deploy to production"
+           sleep 10
+           echo "Approval Accepted. Ready to deploy in Production!"
+           
        - name: Download artifact from build job
          uses: actions/download-artifact@v4
          with:
            name: php-app
 
        - name: Deploying Php app to App service production slot
-         uses: azure/webapps-deploy@v2
-         with:
-           app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
-           slot-name: production
-           package: . # represents the current directory
+         run: |
+           echo "Started deploying in Production...."
+           uses: azure/webapps-deploy@v2
+           with:
+             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+             slot-name: production
+             package: . # represents the current directory
+           echo "Deployment to Production slot completed Successfully"
 
           
        
