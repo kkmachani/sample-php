@@ -93,20 +93,23 @@ jobs:
       needs: [azure-appservice, build-php-app]
       runs-on: self-hosted
       steps:
+        - run: |
+            echo "Started Deploying in Staging slot..."
+        
         - name: Download artifact from build job
           uses: actions/download-artifact@v4
           with:
             name: php-app
-        
-        - name: Deploying Php app to App service
-          run: |
-            echo "Started Deploying in Staging slot..."
-            uses: azure/webapps-deploy@v2
-            with:
-              app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
-              slot-name: ${{ vars.SLOT_NAME }}
-              package: . # represents the current directory
-            echo "Deploying in Staging slot completed Successfully"
+
+        - name: Deploying Php app to App se
+          uses: azure/webapps-deploy@v2
+          with:
+            app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+            slot-name: ${{ vars.SLOT_NAME }}
+            package: . # represents the current directory
+          
+        - run: |
+            echo "Deployment in Staging slot completed Successfully"
 
         - name: Get App Service URL of staging slot
           run: |
@@ -120,26 +123,33 @@ jobs:
      environment: 
        name: Prod
      steps:
-       - name: Approval Required for Production
-         run: | 
+       - run: | 
            echo "Waiting for manual approval to deploy to production"
            sleep 10
-           echo "Approval Accepted. Ready to deploy in Production!"
+           echo "Approval Accepted. Ready to deploy in Production..."
            
-       - name: Download artifact from build job
-         uses: actions/download-artifact@v4
+      #  Download artifact from build job
+       - uses: actions/download-artifact@v4
          with:
            name: php-app
 
        - name: Deploying Php app to App service production slot
          run: |
            echo "Started deploying in Production...."
-           uses: azure/webapps-deploy@v2
-           with:
-             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
-             slot-name: production
-             package: . # represents the current directory
+          
+       - uses: azure/webapps-deploy@v2
+         with:
+            app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+            slot-name: production
+            package: . # represents the current directory
+          
+       - run: |
            echo "Deployment to Production slot completed Successfully"
+
+       - name: Get App Service URL
+         run: |
+           app_url=$(az webapp show --name ${{ vars.AZURE_APP_SERVICE_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --slot production --query "defaultHostName" -o tsv)
+           echo "Production Slot URL: https://$app_url"
 
           
        
