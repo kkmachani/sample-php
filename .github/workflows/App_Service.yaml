@@ -21,9 +21,14 @@ jobs:
         #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+        - name: Login to Azure via Device code
+          run: |
+            echo "Login to Azure using device code"
+            az login --use-device-code
+          
         - name: Azure CLI Script
           run: |
-              az account show
+            az account show
 
         - name: Show Resource Groups
           run: |
@@ -65,6 +70,7 @@ jobs:
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
               --xml > publish-profile.xml
 
+   
    build-php-app:
      name: build-php-app
      runs-on: self-hosted
@@ -81,6 +87,7 @@ jobs:
            name: php-app
            path: .
                   
+   
    deploy-to-app-service-staging-slot:
       name: Deploy to App Service staging slot
       needs: [azure-appservice, build-php-app]
@@ -103,9 +110,8 @@ jobs:
             echo "App Service URL (Staging Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}-staging.azurewebsites.net"
           
            
-      
-   approval-to-production:
-     name: Approval-to-Production
+   deploy-to-app-service-production-slot:
+     name: Deploy to App service Production Slot
      runs-on: self-hosted
      needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot]
      environment: 
@@ -114,24 +120,17 @@ jobs:
        - name: Approval Required for Production
          run: echo "Waiting for manual approval to deploy to production"
      
-   
-   deploy-to-app-service-prod-slot:
-      name: Deploy to App Service Prod Slot
-      needs: [azure-appservice, build-php-app, deploy-to-app-service-staging-slot, approval-to-production]
-      runs-on: self-hosted
-      steps:
-        - name: Download artifact from build job
-          uses: actions/download-artifact@v4
-          with:
-            name: php-app
+       - name: Download artifact from build job
+         uses: actions/download-artifact@v4
+         with:
+           name: php-app
 
-        
-        - name: Deploying Php app to App service production slot
-          uses: azure/webapps-deploy@v2
-          with:
-            app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
-            slot-name: production
-            package: . # represents the current directory
+       - name: Deploying Php app to App service production slot
+         uses: azure/webapps-deploy@v2
+         with:
+           app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
+           slot-name: production
+           package: . # represents the current directory
 
           
        
