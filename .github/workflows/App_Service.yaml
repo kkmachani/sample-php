@@ -6,12 +6,12 @@ on: # defined to trigger the jobs of the workflow
    branches:
      - feature
 jobs:
-   azure-appservice:
-      name: Azure App Service
+   deploying-appservice: 
+      name: Deploying App Service
       runs-on: self-hosted
       steps:
         - name: Checkout repo
-          uses: actions/checkout@v4
+          uses: actions/checkout@v4 # it downloads the repo contents to the runner
          
         # - name: Login to Azure # Azure Login with User Managed Identity
         #   uses: azure/login@v2
@@ -42,7 +42,7 @@ jobs:
             else
               echo "App service plan already exists. Skipping creation..."
             fi
-            sleep 10 
+            sleep 5
 
         - name: Creating a app services
           run: |
@@ -52,7 +52,7 @@ jobs:
             else
               echo "App service already exists. Skipping Creation..."
             fi
-            sleep 10
+            sleep 5
 
         - name: Creating a staging Deployment slot
           run: |
@@ -62,7 +62,7 @@ jobs:
             else
               echo "Staging slot exists. Skipping Creation..."
             fi
-            sleep 10
+            sleep 5
 
         - name: Get App service Publish profile
           run: |
@@ -74,7 +74,7 @@ jobs:
    build-php-app:
      name: build-php-app
      runs-on: self-hosted
-     needs: [azure-appservice]
+     needs: [deploying-appservice] # maintains the dependency of the previous job in current job
      steps:
        - name: Setup PHP
          uses: shivammathur/setup-php@v2
@@ -90,12 +90,9 @@ jobs:
    
    deploying-artifacts-in-staging-slot:
       name: Deploy Artifacts into staging slot
-      needs: [azure-appservice, build-php-app]
+      needs: [deploying-appservice, build-php-app]
       runs-on: self-hosted
       steps:
-        - run: |
-            echo "Started Deploying in Staging slot..."
-        
         - name: Download artifact from build job
           uses: actions/download-artifact@v4
           with:
@@ -107,9 +104,6 @@ jobs:
             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
             slot-name: ${{ vars.SLOT_NAME }}
             package: . # represents the current directory
-          
-        - run: |
-            echo "Deployment in Staging slot completed Successfully"
 
         - name: Get App Service URL of staging slot
           run: |
@@ -119,37 +113,31 @@ jobs:
    deploying-artifacts-in-production-slot:
      name: Deploy Artifacts into Production Slot
      runs-on: self-hosted
-     needs: [azure-appservice, build-php-app, deploying-artifacts-in-staging-slot]
-     environment: 
-       name: Prod
+     needs: [deploying-appservice, build-php-app, deploying-artifacts-in-staging-slot]
      steps:
-       - run: | 
-           echo "Waiting for manual approval to deploy to production"
-           sleep 10
+       - name: Approval Acceptance
+         env:
+          name: Prod # need manual approval before deploying into production slot
+         run: | 
            echo "Approval Accepted. Ready to deploy in Production..."
            
-      #  Download artifact from build job
-       - uses: actions/download-artifact@v4
+       - name: Download artifact from build job
+         uses: actions/download-artifact@v4
          with:
            name: php-app
 
        - name: Deploying Php app to App service production slot
-         run: |
-           echo "Started deploying in Production...."
-          
-       - uses: azure/webapps-deploy@v2
+         uses: azure/webapps-deploy@v2
          with:
             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
             slot-name: production
             package: . # represents the current directory
-          
-       - run: |
-           echo "Deployment to Production slot completed Successfully"
-
-       - name: Get App Service URL
+        
+       - name: Get App Service URL of Production slot
          run: |
-           app_url=$(az webapp show --name ${{ vars.AZURE_APP_SERVICE_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --slot production --query "defaultHostName" -o tsv)
-           echo "Production Slot URL: https://$app_url"
+            echo "App Service URL (Production Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}.azurewebsites.net"
+          
+      
 
           
        
