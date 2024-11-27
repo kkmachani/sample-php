@@ -98,7 +98,7 @@ jobs:
           with:
             name: php-app
 
-        - name: Deploying Php app to App se
+        - name: Deploying Artifacts to Staging Slot
           uses: azure/webapps-deploy@v2
           with:
             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
@@ -128,7 +128,7 @@ jobs:
          with:
            name: php-app
 
-       - name: Deploying Php app to App service production slot
+       - name: Deploying Artifacts to Production Slot
          uses: azure/webapps-deploy@v2
          with:
             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
