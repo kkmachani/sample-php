@@ -11,16 +11,18 @@ echo "1. App Service: $AZURE_APP_SERVICE_NAME"
 echo "2. App Service plan: $AZURE_APP_SERVICE_PLAN"
 echo "3. Deployment slot: $SLOT_NAME"
 
-read -p "Are you sure you want to delete the resources? (yes/no): " CONFIRMATION
+read -p "Do you want to delete the resources? (y/n): " approval
 
-# Check if the confirmation is 'yes'
-if [[ "$CONFIRMATION" != "yes" ]]; then
-  echo "Aborted. Resources will not be deleted."
-  exit 0
+# Check if the input is 'y' or 'n'
+if [[ "$approval" == "y" || "$approval" == "Y" ]]; then
+    echo "Request approved. Proceeding..."
+    # Place your script's commands for the approved action here
+else
+    echo "Action not approved. Exiting."
+    exit 1
 fi
 
-echo "Deleting the resources..."
-
+echo " Deleting the Resources..."
 echo "Stopping the Deployment slot..."
 az webapp deployment slot stop --name $AZURE_APP_SERVICE_NAME --slot $SLOT_NAME --resource-group $RESOURCE_GROUP
 sleep 5
