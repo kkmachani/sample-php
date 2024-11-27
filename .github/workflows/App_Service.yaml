@@ -68,7 +68,7 @@ jobs:
           run: |
             az webapp deployment list-publishing-profiles --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --xml >
+              --xml 
 
    
    build-php-app:
