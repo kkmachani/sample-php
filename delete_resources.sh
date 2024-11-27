@@ -11,8 +11,9 @@ echo "The Following resources are to be deleted:"
 echo "1. App Service: $AZURE_APP_SERVICE_NAME"
 echo "2. App Service plan: $AZURE_APP_SERVICE_PLAN"
 echo "3. Deployment slot: $SLOT_NAME"
-read -p "Are you sure you want to delete the resources/ (yes/no): " CONFIRMATION
 
+read -p "Are you sure you want to delete the resources? (yes/no): " CONFIRMATION
+sleep 10
 if [[ "$CONFIRMATION" != "yes" ]]; then
 
   echo "Executing deletion..."

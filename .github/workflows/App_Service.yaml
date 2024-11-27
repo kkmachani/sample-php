@@ -138,7 +138,7 @@ jobs:
        - name: Get App Service URL of Production slot
          run: |
             echo "App Service URL (Production Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}.azurewebsites.net"
-            sleep 40
+            
 
    deleting-the-resources:
       name: Deleting the App Service Resources
