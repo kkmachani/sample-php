@@ -145,6 +145,10 @@ jobs:
       needs: [deploying-appservice, build-php-app, deploying-artifacts-in-staging-slot, deploying-artifacts-in-production-slot]
       runs-on: self-hosted
       steps:
+        - name: Permissions to execute Shell script
+          run: |
+            chmod +x ./delete_resources.sh
+        
         - name: Executing the Shell Script to delete resources
           run: |
             ./delete_resources.sh
