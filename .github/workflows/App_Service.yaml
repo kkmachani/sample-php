@@ -21,10 +21,10 @@ jobs:
         #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-        - name: Login to Azure via Device code
+        - name: Login to Azure via Device code # To login to Azure 
           run: |
-            echo "Login to Azure using device code"
-            az login --use-device-code
+            printf "Login to Azure using device code"
+            az login --use-device-code 
           
         - name: Azure CLI Script
           run: |
@@ -68,7 +68,7 @@ jobs:
           run: |
             az webapp deployment list-publishing-profiles --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --xml > publish-profile.xml
+              --xml >
 
    
    build-php-app:
@@ -117,9 +117,11 @@ jobs:
      environment:
        name: Prod
      steps:
-       - name: Approval Acceptance
-         run: echo "Approval done. Ready to deploy artifacts in Production..."
        
+       - run: |
+           printf "Approval done. Ready to deploy artifacts in Production..."
+           sleep 15
+         
        - name: Download artifact from build job
          uses: actions/download-artifact@v4
          with:
