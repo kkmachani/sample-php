@@ -1,9 +1,9 @@
 #! /bin/bash
 
-AZURE_APP_SERVICE_PLAN = "kkasp"
-AZURE_APP_SERVICE_NAME = "kkphp"
-SLOT_NAME = "staging"
-RESOURCE_GROUP = "KK_RG"
+AZURE_APP_SERVICE_PLAN="kkasp"
+AZURE_APP_SERVICE_NAME="kkphp"
+SLOT_NAME="staging"
+RESOURCE_GROUP="KK_RG"
 
 # prompt for approval
 

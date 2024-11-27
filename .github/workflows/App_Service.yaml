@@ -138,7 +138,7 @@ jobs:
        - name: Get App Service URL of Production slot
          run: |
             echo "App Service URL (Production Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}.azurewebsites.net"
-
+            sleep 40
 
    deleting-the-resources:
       name: Deleting the App Service Resources
@@ -153,20 +153,7 @@ jobs:
           run: |
             ./delete_resources.sh
 
-   logging-out:
-    name: Logout from Azure
-    needs: [deploying-appservice, build-php-app, deploying-artifacts-in-staging-slot, deploying-artifacts-in-production-slot, deleting-the-resources]
-    runs-on: self-hosted
-    steps:
-      - name: Azure logout
-        run: |
-          read -p "Are you sure you want to log out from Azure? (y/n): " choice
-          if [[ "$choice" == "y" || "$choice" == "Y" ]]; then
-            az logout
-            echo "Successfully logged out."
-          else
-            echo "Logout aborted."
-          fi
+
 
           
        
