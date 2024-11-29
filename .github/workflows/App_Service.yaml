@@ -10,9 +10,16 @@ jobs:
       name: Deploying App Service
       runs-on: self-hosted
       steps:
+        # This task is for checking out the Repository & it downloads the repo contents to the runner
         - name: Checkout repo
-          uses: actions/checkout@v4 # it downloads the repo contents to the runner
+          uses: actions/checkout@v4 
          
+        # To Login to Azure through CLI
+        - name: Login to Azure via Device code # To login to Azure 
+          run: |
+            printf "Login to Azure using device code"
+            az login --use-device-code
+
         # - name: Login to Azure # Azure Login with User Managed Identity
         #   uses: azure/login@v2
         #   with: 
@@ -21,19 +28,17 @@ jobs:
         #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-        - name: Login to Azure via Device code # To login to Azure 
-          run: |
-            printf "Login to Azure using device code"
-            az login --use-device-code 
-          
+        # To Check the details of the Subscription
         - name: Azure CLI Script
           run: |
             az account show
 
-        - name: Show Resource Groups
+        # To Check the resources under this resource group
+        - name: Show the resources under the resource group
           run: |
             az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
-        
+
+        # To Create an App Service plan         
         - name: Creating an app service plan
           run: |
             if ! az appservice plan list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "kkasp"'; then
@@ -44,7 +49,8 @@ jobs:
             fi
             sleep 5
 
-        - name: Creating a app services
+        # To Create an App Service
+        - name: Creating an app service
           run: |
             if ! az webapp list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "kkphp"'; then
              echo "App service doesnot exists. Creating it.."
@@ -52,8 +58,9 @@ jobs:
             else
               echo "App service already exists. Skipping Creation..."
             fi
-            sleep 5
+            sleep 10
 
+        # To Create "Staging" Deployment slot 
         - name: Creating a staging Deployment slot
           run: |
             if ! az webapp deployment slot list --name ${{ vars.AZURE_APP_SERVICE_NAME }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} | grep -q '"name": "staging"'; then
@@ -62,15 +69,16 @@ jobs:
             else
               echo "Staging slot exists. Skipping Creation..."
             fi
-            sleep 5
+            sleep 10
 
+        # To check the App Service Publish Profile
         - name: Get App service Publish profile
           run: |
             az webapp deployment list-publishing-profiles --name ${{ vars.AZURE_APP_SERVICE_NAME }} \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
               --xml 
 
-   
+   # This Job is to Build the Artfiacts by using repository.
    build-php-app:
      name: build-php-app
      runs-on: self-hosted
@@ -80,36 +88,40 @@ jobs:
          uses: shivammathur/setup-php@v2
          with:
            php-version: '8.3'
-
+ 
+       # To upload the artifacts in the current directory
        - name: Upload artifact for deployment job
          uses: actions/upload-artifact@v4
          with:
            name: php-app
            path: .
                   
-   
+   # This job is to deploy the artifacts in staging slot
    deploying-artifacts-in-staging-slot:
       name: Deploy Artifacts into staging slot
       needs: [deploying-appservice, build-php-app]
       runs-on: self-hosted
       steps:
+        # To download the artifacts from the build job
         - name: Download artifact from build job
           uses: actions/download-artifact@v4
           with:
             name: php-app
 
+        # To deploy the artifacts in deployment slot
         - name: Deploying Artifacts to Staging Slot
           uses: azure/webapps-deploy@v2
           with:
             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
             slot-name: ${{ vars.SLOT_NAME }}
             package: . # represents the current directory
-
+        
+        # To get the URL of Staging Slot
         - name: Get App Service URL of staging slot
           run: |
             echo "App Service URL (Staging Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}-staging.azurewebsites.net"
           
-           
+   # This job is to deploy the artifacts in production slot with the reviewer's approval
    deploying-artifacts-in-production-slot:
      name: Deploy Artifacts into Production Slot
      runs-on: self-hosted
@@ -117,41 +129,33 @@ jobs:
      environment:
        name: Prod
      steps:
-
+       # To wait for the approval to deploy in production slot
        - name: Approval Status
          run: |
            printf "Approval done. Ready to deploy artifacts in Production..."
            sleep 5
-         
+
+       # Download the artifacts from the build job
        - name: Download artifact from build job
          uses: actions/download-artifact@v4
          with:
            name: php-app
 
+       # To Deploy the artifacts in Production slot
        - name: Deploying Artifacts to Production Slot
          uses: azure/webapps-deploy@v2
          with:
             app-name: ${{ vars.AZURE_APP_SERVICE_NAME }}
             slot-name: production
             package: . # represents the current directory
-        
+
+       # To get the URL of Production slot
        - name: Get App Service URL of Production slot
          run: |
             echo "App Service URL (Production Slot): https://${{ vars.AZURE_APP_SERVICE_NAME }}.azurewebsites.net"
             
 
-   deleting-the-resources:
-      name: Deleting the App Service Resources
-      needs: [deploying-appservice, build-php-app, deploying-artifacts-in-staging-slot, deploying-artifacts-in-production-slot]
-      runs-on: self-hosted
-      steps:
-        - name: Permissions to execute Shell script
-          run: |
-            chmod +x ./delete_resources.sh
-        
-        - name: Executing the Shell Script to delete resources
-          run: |
-            ./delete_resources.sh
+
 
 
 
