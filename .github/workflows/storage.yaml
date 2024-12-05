@@ -60,7 +60,7 @@ jobs:
 
         - name: Check the Container in Storage Account
           run: |
-            az storage container list -account-name ${{ vars.AZURE_STORAGE_ }} --output table
+            az storage container list -account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --output table
    
   #  upload-files:
   #     name: Uploading the Files in Storage Account
