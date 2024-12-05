@@ -1,0 +1,47 @@
+name: Storage Account Static Website
+
+on: # defined to trigger the jobs of the workflow
+ push:
+   branches:
+     - feature
+
+jobs:
+   storage-account:
+      name: Deploying Storage Account
+      runs-on: self-Hosted
+      steps:
+        - name: Checkout repo
+          uses: actions/checkout@v4 
+
+        - name: Login to Azure via Device code
+          run: |
+            printf "Login to Azure using device code"
+            az login --use-device-code
+        
+        - name: Azure CLI Script
+          run: |
+            az account show
+
+        - name: Show the resources under the resource group
+          run: |
+            az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
+
+        - name: Creating the Storage Account
+          run: |
+           if ! az storage account list --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --query "[?name=='${{ vars.AZURE_STORAGE_ACCOUNT }}']" -o tsv | grep -q .; then
+             echo "Storage Account does not exist. Creating it..."
+             az storage account create -n ${{ vars.AZURE_STORAGE_ACCOUNT }} -g ${{ vars.AZURE_RESOURCE_GROUP }} -l "centralindia" --sku Standard_LRS --vnet ASVM-vnet
+           else
+             echo "Storage Account already exists. Skipping creation..."
+           fi
+           sleep 5
+
+        - name: Show the Storage Account
+          run: |
+            az account show --name ${{ vars.AZURE_STORAGE_ACCOUNT }}
+        
+
+        
+        
+
+ 
