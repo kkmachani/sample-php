@@ -46,7 +46,7 @@ jobs:
 
         - name: Show the Storage Account
           run: |
-            az account show --name ${{ vars.AZURE_STORAGE_ACCOUNT }}
+            az storage account show --name ${{ vars.AZURE_STORAGE_ACCOUNT }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
         
 
         
