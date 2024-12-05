@@ -13,10 +13,10 @@ jobs:
         - name: Checkout repo
           uses: actions/checkout@v4 
 
-        - name: Login to Azure via Device code
-          run: |
-            printf "Login to Azure using device code"
-            az login --use-device-code
+        # - name: Login to Azure via Device code
+        #   run: |
+        #     printf "Login to Azure using device code"
+        #     az login --use-device-code
         
         - name: Azure CLI Script
           run: |
@@ -26,19 +26,27 @@ jobs:
           run: |
             az resource list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --output table
 
-        - name: Creating the Storage Account
+        - name: Check the Vnet in the Resource Group
           run: |
-           if ! az storage account list --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --query "[?name=='${{ vars.AZURE_STORAGE_ACCOUNT }}']" -o tsv | grep -q .; then
-             echo "Storage Account does not exist. Creating it..."
-             az storage account create -n ${{ vars.AZURE_STORAGE_ACCOUNT }} -g ${{ vars.AZURE_RESOURCE_GROUP }} -l "centralindia" --sku Standard_LRS --vnet ASVM-vnet
-           else
-             echo "Storage Account already exists. Skipping creation..."
-           fi
-           sleep 5
+            az network vnet list --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
 
-        - name: Show the Storage Account
+        - name: Checking the Vnet Subnets
           run: |
-            az account show --name ${{ vars.AZURE_STORAGE_ACCOUNT }}
+            az network vnet subnet list --vnet-name ASVM-vnet --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
+
+        # - name: Creating the Storage Account
+        #   run: |
+        #    if ! az storage account list --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --query "[?name=='${{ vars.AZURE_STORAGE_ACCOUNT }}']" -o tsv | grep -q .; then
+        #      echo "Storage Account does not exist. Creating it..."
+        #      az storage account create -n ${{ vars.AZURE_STORAGE_ACCOUNT }} -g ${{ vars.AZURE_RESOURCE_GROUP }} -l "centralindia" --sku Standard_LRS --vnet ASVM-vnet
+        #    else
+        #      echo "Storage Account already exists. Skipping creation..."
+        #    fi
+        #    sleep 5
+
+        # - name: Show the Storage Account
+        #   run: |
+        #     az account show --name ${{ vars.AZURE_STORAGE_ACCOUNT }}
         
 
         
