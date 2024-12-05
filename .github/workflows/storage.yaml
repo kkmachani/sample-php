@@ -43,8 +43,6 @@ jobs:
                -g ${{ vars.AZURE_RESOURCE_GROUP }} \
                -l "centralindia" \
                --sku Standard_LRS \
-               --default-action Deny \
-               --network-rule-action Allow \
                --subnet default \
                --vnet-name ASVM-vnet
            else
