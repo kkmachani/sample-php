@@ -58,7 +58,7 @@ jobs:
            fi
            sleep 5
 
-        - name: List Container in Storage Account
+        - name: List out the Container in Storage Account
           run: |
             az storage container list -account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --output table
    
