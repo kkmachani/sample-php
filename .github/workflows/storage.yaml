@@ -12,11 +12,6 @@ jobs:
       steps:
         - name: Checkout repo
           uses: actions/checkout@v4 
-
-        # - name: Login to Azure via Device code
-        #   run: |
-        #     printf "Login to Azure using device code"
-        #     az login --use-device-code
         
         - name: Azure CLI Script
           run: |
@@ -47,6 +42,35 @@ jobs:
         - name: Show the Storage Account
           run: |
             az storage account show --name ${{ vars.AZURE_STORAGE_ACCOUNT }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
+   
+   storage-container:
+      name: Creating Storage Container
+      needs: [storage-account]
+      runs-on: self-Hosted
+      steps: 
+        - name: Deploying Storage Container
+          run: |
+           if ! az storage account list --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --query "[?name=='${{ vars.AZURE_STORAGE_CONTAINER }}']" -o tsv | grep -q .; then
+            echo "Storage Container does not exist. Creating it..."
+            az storage container create --name ${{ vars.AZURE_STORAGE_CONTAINER }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
+           else
+            echo "Storage Container already exists. Skipping creation..."
+           fi
+           sleep 5
+
+        - name: Check the Container in Storage Account
+          run: |
+            az storage container list -account-name ${{ vars.AZURE_STORAGE_ }} --output table
+   
+   upload-files:
+      name: Uploading the Files in Storage Account
+      runs-on: self-Hosted
+      needs: [storage-account, storage-container]
+      steps: 
+        - name: Files Uploading in Blob
+          run: |
+            az storage blob upload --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --container-name ${{ vars.AZURE_CONTAINER_NAME }}
+          
         
 
         
