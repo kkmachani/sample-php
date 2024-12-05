@@ -38,13 +38,7 @@ jobs:
           run: |
            if ! az storage account list --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" --query "[?name=='${{ vars.AZURE_STORAGE_ACCOUNT }}']" -o tsv | grep -q .; then
              echo "Storage Account does not exist. Creating it..."
-             az storage account create \
-               -n ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-               -g ${{ vars.AZURE_RESOURCE_GROUP }} \
-               -l "centralindia" \
-               --sku Standard_LRS \
-               --subnet default \
-               --vnet-name ASVM-vnet
+             az storage account create -n ${{ vars.AZURE_STORAGE_ACCOUNT }} -g ${{ vars.AZURE_RESOURCE_GROUP }}  -l "centralindia" --sku Standard_LRS --subnet default --vnet-name ASVM-vnet
            else
              echo "Storage Account already exists. Skipping creation..."
            fi
