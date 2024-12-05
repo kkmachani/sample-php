@@ -50,17 +50,17 @@ jobs:
       steps: 
         - name: Deploying Storage Container
           run: |
-           if ! az storage account list --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}" --query "[?name=='${{ vars.AZURE_STORAGE_CONTAINER }}']" -o tsv | grep -q .; then
-            echo "Storage Container does not exist. Creating it..."
-            az storage container create --name ${{ vars.AZURE_STORAGE_CONTAINER }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
-           else
-            echo "Storage Container already exists. Skipping creation..."
-           fi
-           sleep 5
+            if ! az storage container list --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}" --query "[?name=='${{ vars.AZURE_STORAGE_CONTAINER }}']" -o tsv | grep -q .; then
+              echo "Storage Container does not exist. Creating it..."
+              az storage container create --name "${{ vars.AZURE_STORAGE_CONTAINER }}" --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}"
+            else
+              echo "Storage Container already exists. Skipping creation..."
+            fi
+            sleep 5
 
         - name: List out the Container in Storage Account
           run: |
-            az storage container exists -account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --output table
+            az storage container list --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --output table
    
   #  upload-files:
   #     name: Uploading the Files in Storage Account
