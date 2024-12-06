@@ -42,64 +42,71 @@ jobs:
         - name: Show the Storage Account
           run: |
             az storage account show --name ${{ vars.AZURE_STORAGE_ACCOUNT }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
-   
-   storage-container:
-      name: Creating Storage Container
-      needs: [storage-account]
-      runs-on: self-Hosted
-      steps: 
-        - name: Deploying Storage Container
-          run: |
-            if ! az storage container list --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}" --query "[?name=='${{ vars.AZURE_STORAGE_CONTAINER }}']" -o tsv | grep -q .; then
-              echo "Storage Container does not exist. Creating it..."
-              az storage container create --name "${{ vars.AZURE_STORAGE_CONTAINER }}" --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}"
-            else
-              echo "Storage Container already exists. Skipping creation..."
-            fi
-            sleep 5
-
-        - name: List out the Container in Storage Account
-          run: |
-            az storage container list --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --output table
-   
-   upload-files:
-      name: Uploading the Files in Storage Account
-      runs-on: self-Hosted
-      needs: [storage-account, storage-container]
-      steps: 
-        - name: Files Uploading in Blob
-          run: |
-            az storage blob upload-batch --destination ${{ vars.AZURE_STORAGE_CONTAINER }} --source ./${{ vars.FILE_NAME }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
 
    static-website-hosting:
       name: Enable Static Website Hosting
       runs-on: self-Hosted
-      needs: [storage-account, storage-container, upload-files]
+      needs: [storage-account]
       steps:
-        - name: Enabling Static Website Hosting
+        - name: Checking the static Website is enabled
           run: |
-            az storage blob service-properties update \
-            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-            --static-website \
-            --index-document index.html \
 
+            is_enabled=$(az storage blob service-properties show --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --query "staticWebsite.enabled" --output tsv)
+        
+            if [ "$is_enabled" = "true" ]; then
+              echo "Static website hosting is already enabled. Skipping this step."
+            else
+              echo "Static website hosting is not enabled. Enabling now..."
+              az storage blob service-properties update --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --static-website --index-document index.html --error-document 404.html
+            fi
+        
         - name: Verifying Static Website Hosting
           run: |
             az storage blob service-properties show \
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
             --query "staticWebsite"
+   
+  #  storage-container:
+  #     name: Creating Storage Container
+  #     needs: [storage-account]
+  #     runs-on: self-Hosted
+  #     steps: 
+  #       - name: Deploying Storage Container
+  #         run: |
+  #           if ! az storage container list --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}" --query "[?name=='${{ vars.AZURE_STORAGE_CONTAINER }}']" -o tsv | grep -q .; then
+  #             echo "Storage Container does not exist. Creating it..."
+  #             az storage container create --name "${{ vars.AZURE_STORAGE_CONTAINER }}" --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}"
+  #           else
+  #             echo "Storage Container already exists. Skipping creation..."
+  #           fi
+  #           sleep 5
 
-   verifying-static-website-hosting:
-       name: Verifying Static Website Hosting
-       runs-on: self-Hosted
-       needs: [storage-account, storage-container, upload-files, static-website-hosting]
-       steps:
-         - name: Getting Static Website URL
-           run: |
-             az storage account show \
-             --name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-             --query "primaryEndpoints.${{ vars.AZURE_STORAGE_CONTAINER }}" \
-             --output tsv
+  #       - name: List out the Container in Storage Account
+  #         run: |
+  #           az storage container list --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --output table
+   
+  #  upload-files:
+  #     name: Uploading the Files in Storage Account
+  #     runs-on: self-Hosted
+  #     needs: [storage-account, storage-container]
+  #     steps: 
+  #       - name: Files Uploading in Blob
+  #         run: |
+  #           az storage blob upload-batch --destination ${{ vars.AZURE_STORAGE_CONTAINER }} --source ./${{ vars.FILE_NAME }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
+
+
+
+  #  verifying-static-website-hosting:
+  #      name: Verifying Static Website Hosting
+  #      runs-on: self-Hosted
+  #      needs: [storage-account, storage-container, upload-files, static-website-hosting]
+  #      steps:
+  #        - name: Getting Static Website URL
+  #          run: |
+  #            az storage account show \
+  #            --name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+  #            --query "primaryEndpoints.${{ vars.AZURE_STORAGE_CONTAINER }}" \
+  #            --output tsv
 
              
 
