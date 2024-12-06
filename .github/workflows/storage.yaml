@@ -69,7 +69,7 @@ jobs:
       steps: 
         - name: Files Uploading in Blob
           run: |
-            az storage blob upload-batch --destination ${{ vars.AZURE_STORAGE_CONTAINER}} --source ./mediplus-lite --account-name ${{ vars.AZURE_ACCOUNT_NAME }}
+            az storage blob upload-batch --destination ${{ vars.AZURE_STORAGE_CONTAINER }} --source ./${{ vars.FILE_NAME }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
 
    static-website-hosting:
       name: Enable Static Website Hosting
@@ -78,7 +78,7 @@ jobs:
       steps:
         - name: Enabling Static Website Hosting
           run: |
-            az storage blob service-properties update --account-name ${{vars.AZURE_STORAGE_ACCOUNT }} --static-website --index-document index.html --error-document error.html
+            az storage blob service-properties update --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --static-website --index-document index.html --error-document error.html
 
         
 
