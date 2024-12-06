@@ -85,28 +85,28 @@ jobs:
   #         run: |
   #           az storage container list --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --output table
    
-  #  upload-files:
-  #     name: Uploading the Files in Storage Account
-  #     runs-on: self-Hosted
-  #     needs: [storage-account, storage-container]
-  #     steps: 
-  #       - name: Files Uploading in Blob
-  #         run: |
-  #           az storage blob upload-batch --destination ${{ vars.AZURE_STORAGE_CONTAINER }} --source ./${{ vars.FILE_NAME }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
+   upload-files:
+      name: Uploading the Files in Storage Account
+      runs-on: self-Hosted
+      needs: [storage-account, static-website-hosting]
+      steps: 
+        - name: Files Uploading in Blob
+          run: |
+            az storage blob upload-batch --destination ${{ vars.AZURE_STORAGE_CONTAINER }} --source ./${{ vars.FILE_NAME }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
 
 
 
-  #  verifying-static-website-hosting:
-  #      name: Verifying Static Website Hosting
-  #      runs-on: self-Hosted
-  #      needs: [storage-account, storage-container, upload-files, static-website-hosting]
-  #      steps:
-  #        - name: Getting Static Website URL
-  #          run: |
-  #            az storage account show \
-  #            --name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-  #            --query "primaryEndpoints.${{ vars.AZURE_STORAGE_CONTAINER }}" \
-  #            --output tsv
+   verifying-static-website-hosting:
+       name: Verifying Static Website Hosting
+       runs-on: self-Hosted
+       needs: [storage-account, static-website-hosting, upload-files]
+       steps:
+         - name: Getting Static Website URL
+           run: |
+             az storage account show \
+             --name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+             --query "primaryEndpoints.${{ vars.AZURE_STORAGE_CONTAINER }}" \
+             --output tsv
 
              
 
