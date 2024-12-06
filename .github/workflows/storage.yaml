@@ -78,7 +78,11 @@ jobs:
       steps:
         - name: Enabling Static Website Hosting
           run: |
-            az storage blob service-properties update --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --static-website --index-document index.html --error-document error.html
+            az storage blob service-properties update \
+            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+            --static-website \
+            --index-document index.html \
+            --error-document error.html
 
         
 
