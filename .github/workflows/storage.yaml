@@ -67,7 +67,7 @@ jobs:
    upload-files: # Uploading Files in Storage Container
       name: Uploading the Files in Storage Account
       runs-on: self-Hosted
-      needs: [storage-account, storage-container-list]
+      needs: [storage-account, storage-container-list, enabling-static-website]
       steps: 
         - name: Files Uploading in Blob
           run: |
