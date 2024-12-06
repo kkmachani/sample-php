@@ -82,7 +82,16 @@ jobs:
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
             --static-website \
             --index-document index.html \
-            --error-document error.html
+            --error-document 404.html
+
+  #  verifying-static-website-hosting:
+  #      name: Verifying Static Website Hosting
+  #      runs-on: self-Hosted
+  #      needs: [storage-account, storage-container, upload-files, static-website-hosting]
+  #      steps:
+  #        - name: Getting Static Website URL
+  #          run: |
+             
 
         
 
