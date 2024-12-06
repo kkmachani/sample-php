@@ -89,13 +89,18 @@ jobs:
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
             --query "staticWebsite"
 
-  #  verifying-static-website-hosting:
-  #      name: Verifying Static Website Hosting
-  #      runs-on: self-Hosted
-  #      needs: [storage-account, storage-container, upload-files, static-website-hosting]
-  #      steps:
-  #        - name: Getting Static Website URL
-  #          run: |
+   verifying-static-website-hosting:
+       name: Verifying Static Website Hosting
+       runs-on: self-Hosted
+       needs: [storage-account, storage-container, upload-files, static-website-hosting]
+       steps:
+         - name: Getting Static Website URL
+           run: |
+             az storage account show \
+             --name <StorageAccountName> \
+             --query "primaryEndpoints.${{ vars.AZURE_STORAGE_CONTAINER }}" \
+             --output tsv
+
              
 
         
