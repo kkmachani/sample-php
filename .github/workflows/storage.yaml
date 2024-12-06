@@ -82,7 +82,12 @@ jobs:
             --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
             --static-website \
             --index-document index.html \
-            --error-document 404.html
+
+        - name: Verifying Static Website Hosting
+          run: |
+            az storage blob service-properties show \
+            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+            --query "staticWebsite"
 
   #  verifying-static-website-hosting:
   #      name: Verifying Static Website Hosting
