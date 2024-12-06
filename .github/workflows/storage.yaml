@@ -57,7 +57,7 @@ jobs:
               echo "Static website hosting is already enabled. Skipping this step."
             else
               echo "Static website hosting is not enabled. Enabling now..."
-              az storage blob service-properties update --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --static-website --index-document index.html --error-document 404.html
+              az storage blob service-properties update --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --static-website --index-document index.html
             fi
         
         - name: Verifying Static Website Hosting
