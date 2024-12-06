@@ -92,7 +92,7 @@ jobs:
       steps: 
         - name: Files Uploading in Blob
           run: |
-            az storage blob upload-batch --destination ${{ vars.AZURE_STORAGE_CONTAINER }} --source ./${{ vars.FILE_NAME }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
+            az storage blob upload-batch --container-name ${{ vars.AZURE_STORAGE_CONTAINER }} --source ./${{ vars.FILE_NAME }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
 
 
 
