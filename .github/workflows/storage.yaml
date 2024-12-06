@@ -43,66 +43,47 @@ jobs:
           run: |
             az storage account show --name ${{ vars.AZURE_STORAGE_ACCOUNT }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
 
-   
-   storage-container: # To create the Storage Container
-      name: Creating Storage Containers
+   storage-container-list: # To create the Storage Container
+      name: Listing Storage Containers
       needs: [storage-account]
       runs-on: self-Hosted
       steps: 
-        - name: Deploying Storage Container
-          run: |
-            if ! az storage container list --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}" --query "[?name=='${{ vars.AZURE_STORAGE_CONTAINER }}']" -o tsv | grep -q .; then
-              echo "Storage Container does not exist. Creating it..."
-              az storage container create --name "${{ vars.AZURE_STORAGE_CONTAINER }}" --account-name "${{ vars.AZURE_STORAGE_ACCOUNT }}"
-            else
-              echo "Storage Container already exists. Skipping creation..."
-            fi
-            sleep 5
-
         - name: List out the Container in Storage Account
           run: |
             az storage container list --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} --output table
 
-   
-  #  cdn-profile: # To Host the Static Website using CDN Profile
-  #      name: CDN profile for Storage Container
-  #      runs-on: self-Hosted
-  #      needs: [storage-account, storage-container]
-  #      steps:
-  #        - name: Creating CDN Profile
-  #          run: |
-  #            az cdn profile create --name ${{ vars.AZURE_CDN_PROFILE }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --location centralindia --sku Standard_Microsoft
+   enabling-static-website: # To create the Storage Container
+      name: Enabling Static Website
+      needs: [storage-account, storage-container-list]
+      runs-on: self-Hosted
+      steps: 
+        - name: Website
+          run: |
+            az storage blob service-properties update \
+            --account-name <StorageAccountName> \
+            --static-website \
+            --index-document index.html
 
-  #        - name: Creating CDN Endpoint
-  #          run: |
-  #            az cdn endpoint create --name ${{ vars.AZURE_CDN_ENDPOINT }} --profile-name ${{ vars.AZURE_CDN_PROFILE }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} --origin ${{ vars.AZURE_STORAGE_ACCOUNT }}.blob.core.windows.net
- 
-  #        - name: Verifying the Endpoint
-  #          run: |
-  #            az cdn endpoint show --name ${{ vars.AZURE_CDN_ENDPOINT }} --profile-name ${{ vars.AZURE_CDN_PROFILE }} --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
+   upload-files: # Uploading Files in Storage Container
+      name: Uploading the Files in Storage Account
+      runs-on: self-Hosted
+      needs: [storage-account, storage-container-list]
+      steps: 
+        - name: Files Uploading in Blob
+          run: |
+            az storage blob upload-batch --container-name ${{ vars.AZURE_STORAGE_CONTAINER }} --source ./${{ vars.FILE_NAME }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
 
-
-  #  upload-files: # Uploading Files in Storage Container
-  #     name: Uploading the Files in Storage Account
-  #     runs-on: self-Hosted
-  #     needs: [storage-account, storage-container, cdn-profile]
-  #     steps: 
-  #       - name: Files Uploading in Blob
-  #         run: |
-  #           az storage blob upload-batch --container-name ${{ vars.AZURE_STORAGE_CONTAINER }} --source ./${{ vars.FILE_NAME }} --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }}
-
-   
-  #  verifying-static-website-hosting:
-  #      name: Verifying Static Website Hosting
-  #      runs-on: self-Hosted
-  #      needs: [storage-account, storage-container, upload-files]
-  #      steps:
-  #        - name: Getting Static Website URL
-  #          run: |
-  #            az storage account show \
-  #            --name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
-  #            --query "primaryEndpoints.${{ vars.AZURE_STORAGE_CONTAINER }}" \
-  #            --output tsv
+   verifying-static-website-hosting:
+       name: Verifying Static Website Hosting
+       runs-on: self-Hosted
+       needs: [storage-account, storage-container-list, upload-files]
+       steps:
+         - name: Getting Static Website URL
+           run: |
+             az storage account show \
+             --name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
+             --query "primaryEndpoints.${{ vars.AZURE_STORAGE_CONTAINER }}" \
+             --output tsv
 
              
 
