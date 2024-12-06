@@ -45,7 +45,7 @@ jobs:
 
    
    storage-container: # To create the Storage Container
-      name: Creating Storage Container
+      name: Creating Storage Containers
       needs: [storage-account]
       runs-on: self-Hosted
       steps: 
