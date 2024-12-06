@@ -97,7 +97,7 @@ jobs:
          - name: Getting Static Website URL
            run: |
              az storage account show \
-             --name <StorageAccountName> \
+             --name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
              --query "primaryEndpoints.${{ vars.AZURE_STORAGE_CONTAINER }}" \
              --output tsv
 
