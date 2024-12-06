@@ -60,7 +60,7 @@ jobs:
         - name: Website
           run: |
             az storage blob service-properties update \
-            --account-name <StorageAccountName> \
+            --account-name ${{ vars.AZURE_STORAGE_ACCOUNT }} \
             --static-website \
             --index-document index.html
 
